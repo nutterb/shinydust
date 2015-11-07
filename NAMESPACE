@@ -3,6 +3,7 @@
 export(checkboxGroupTable)
 export(checkboxTable)
 export(checkbox_html)
+export(launchExample)
 export(radioTable)
 export(textInput_html)
 import(pixiedust)

@@ -18,7 +18,8 @@ server <- shinyServer(function(input, output) {
     renderText({
       data.frame(generic = paste0("Text Item ", 1:4),
                  stringsAsFactors = FALSE) %>%
-        mutate(textInputColumn = textInput_html(inputId = paste0("item", 1:4))) %>%
+        mutate(textInputColumn = textInput_html(inputId = paste0("item", 1:4),
+                                                value = currentValue())) %>%
         cbind(currentValue()) %>%
         dust() %>%
         sprinkle_colnames("Item Description", "Further Input", "Current Value") %>%
@@ -40,4 +41,3 @@ ui <- shinyUI(fluidPage(
   )
 ))
 
-shinyApp(ui = ui, server = server) 

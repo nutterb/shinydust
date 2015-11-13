@@ -1,15 +1,24 @@
-#' Shiny User Interfaces and Customizations Using Pixiedust  
+#' Tabular Input Controls for Shiny Applications
 #' 
-#' The initial motivation behind \code{shinydust} was that I needed a way to have a table 
-#' of options in a shiny application that included the radio buttons to select a record.
-#' After selecting a record, I would explore the data behind that record in more detail in
-#' subsequent tabs.  As I explored how to make this happen, I discovered--to my delight--that
-#' all of the work I had previously put into \code{pixiedust} could be applied to this 
-#' table and other styles of tabular shiny inputs.
-#' 
-#' The tools in \code{shinydust} provide the ability to produce tabular panels that have
-#' all the reactivity of \code{controls} and all of the flexibility of \code{pixiedust}
-#' tables.
+#' The motivation for the \code{shinydust} package originated with a need for a tabular display 
+#' of records from which to select single record to for further inspection. The \code{shiny}
+#' function \code{radioButtons}, however, didn't allow for a sufficiently organized tabular 
+#' display to permit an informative selection.
+#'
+#' The \code{shinydust} functions mimic their \code{shiny} counterparts with mild modifications
+#' to permit them to be used in tabular displays. In order to render the tabular inputs, the 
+#' functions are run on the shiny server in a \code{renderText} call and rendered in the 
+#' user interface using \code{uiOutput}.
+#'
+#' Each \code{shiny} input function has two counterparts appended with either \code{_cell} 
+#' or \code{_row}. The \code{_cell} functions produce HTML code for an input within a table
+#' cell. The \code{_row} functions generate a data frame with the label in one column and the 
+#' input control in the other, providing a shortcut to generate tables of multiple input
+#' types. 
+#'
+#' Data frames of input controls can be converted to HTML code via the \code{pixiedust} package. 
+#' This also permits all of the formatting options made available with \code{pixiedust}.
+#'
 #'  
 #' @name shinydust
 #' @import pixiedust

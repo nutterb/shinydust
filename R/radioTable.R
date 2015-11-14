@@ -1,84 +1,10 @@
-#' @name radioTable
-#' 
-#' @title Generate a Table With a Column of Radio Buttons
-#' @description The radio button table allows for display of tabular information
-#'   with the option to select an option for further analysis.
-#'   
-#' @param tbl An object that inherits \code{data.frame}
-#' @param inputId A string of length 1, as would be passed to the argument
-#'   of the same name in \code{radioButtons}.
-#' @param label A character vector of labels to appear next to the radio buttons.
-#'   Most often, in a tabular display, this function can be served by another
-#'   table in the column and \code{label} can be left blank.
-#' @param choices A vector or list of choices for the radio buttons.  This must
-#'   have length equal to \code{nrow(tbl)}.
-#' @param selected A value of the choice to be initially selected.
-#' @param table_label A character string to be displayed above the table.
-#' @param radio_column The column position at which the radio buttons should
-#'   be placed.
-#' @param pixie A chain of \code{sprinkle} for customizing the appearance of the 
-#'   table.  The chain must start with \code{.} and may take any number of 
-#'   commands connected by the \code{\%>\%} operator.
-#' @param display_table Logical.  Defaults to \code{FALSE}, which converts the 
-#'   the table into a character string suitable for \code{renderText}. When
-#'   \code{TRUE}, it prints the table to a viewing pane in order to assist the
-#'   user in formatting the table without having to view it in the shiny application.
-#'   
-#' @author Benjamin Nutter
-#' 
-#' @seealso \code{\link[pixiedust]{dust}}, \code{\link[pixiedust]{sprinkle}},
-#'   \code{\link[shiny]{radioButtons}}
-#'   
-#'   \code{\link{checkboxGroupTable}}
-#'   
-#' @examples
-#' radioTable(tbl = mtcars, 
-#'   inputId = "chooseCar", 
-#'   label = rownames(mtcars), 
-#'   choices = paste0("car", 1:nrow(mtcars)), 
-#'   table_label = "Select a Vehicle",
-#'   display_table=TRUE,
-#'   pixie = . %>% sprinkle(bg_pattern_by = "rows"))
-#'   
-#' \dontrun{
-#' library(shiny)
-#' library(pixiedust)
-#' library(shinydust)
-#' 
-#' server <- shinyServer(function(input, output) {
-#'   output$table <- 
-#'     renderText({
-#'       cbind(rownames(mtcars), mtcars) %>%
-#'         radioTable(inputId = "chooseCar", 
-#'                    label = "", 
-#'                    choices = paste0("car", 1:nrow(mtcars)), 
-#'                    table_label = "Select a Vehicle",
-#'                    pixie = . %>% 
-#'                    sprinkle(bg_pattern_by = "rows") %>%
-#'                    sprinkle_table(pad = 7) %>%
-#'                    sprinkle_colnames("rownames(mtcars)" = "",
-#'                                      control = ""))
-#'    })
-#'    
-#' output$choice <- renderText(input$chooseCar)
-#' })
-#' 
-#' ui <- shinyUI(fluidPage(
-#'   wellPanel(
-#'     verbatimTextOutput("choice"),
-#'     uiOutput("table")
-#'   )
-#' ))
-#' 
-#' shinyApp(ui = ui, server = server) 
-#' }
+#' @rdname checkboxRadioTables
 #'   
 #' @export
 
-#* Generate the tags around the table that allow the radio buttons to react
 radioTable <- function(tbl, inputId, label="", choices, selected=NULL,
                        table_label = "",
-                       radio_column = 1, pixie=. %>% identity(),
+                       control_column = 1, pixie=. %>% identity(),
                        display_table = FALSE){
   
   Check <- ArgumentCheck::newArgCheck()
@@ -107,9 +33,9 @@ radioTable <- function(tbl, inputId, label="", choices, selected=NULL,
     }
   }
   
-  if (!radio_column %in% c(seq_along(tbl), ncol(tbl)+1))
+  if (!control_column %in% c(seq_along(tbl), ncol(tbl)+1))
     ArgumentCheck::addWarning(
-      msg = paste0("'radio_column' should be a value between 1 and ncol(tbl) + 1 = ",
+      msg = paste0("'control_column' should be a value between 1 and ncol(tbl) + 1 = ",
                    ncol(tbl) + 1, "."),
       argcheck = Check)
   
@@ -117,7 +43,7 @@ radioTable <- function(tbl, inputId, label="", choices, selected=NULL,
   
   radio <- radio_html(inputId, label, choices, selected)
 
-  tbl <- insert_control_column(tbl, radio, radio_column)
+  tbl <- insert_control_column(tbl, radio, control_column)
 
   tbl <- 
     pixiedust::dust(tbl) %>%

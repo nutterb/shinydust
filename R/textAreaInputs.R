@@ -51,9 +51,8 @@ textArea_cell <- function(inputId, label = "", value = "",
   
   paste0(label,
          "<textarea id='", inputId, "' ", 
-         "value='", value, "' ", 
          paste0(names(dots), "='", dots, "' ", collapse=""),
-         "></textarea>")
+         ">", value, "</textarea>")
 }
 
 #' @rdname textAreaInputs

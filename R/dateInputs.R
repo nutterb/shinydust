@@ -41,7 +41,13 @@
 #' options(pixiedust_print_method = "html")
 #' shinyApp(
 #'   ui = shinyUI(
-#'     wellPanel(uiOutput("sampleUI"))
+#'     navbarPage(title = "Example",
+#'       tabsetPanel(
+#'         tabPanel(title = "Dates",
+#'           uiOutput("sampleUI")
+#'         )
+#'       )
+#'     )
 #'   ),
 #'   
 #'   server = shinyServer(function(input, output){
@@ -107,9 +113,9 @@ dateInput_cell <- function(inputId, label = "", value = NULL,
   if (is.null(max)) max <- ""
   if (inherits(max, "Date")) max <- format(max, format = "%Y-%m-%d")
   
-  paste0(label, 
-         "<input id='", inputId, "' ",
-         "class='shiny-date-input form-group shiny-input-container form-control datepicker' ",
+  paste0("<div id='", inputId, "' class='shiny-date-input form-group shiny-input-container'>",
+         label, 
+         "<input class='form-control datepicker' ",
          "type='text' ",
          "data-date-language='", language, "' ",
          "data-date-weekstart='", weekstart, "' ",
@@ -119,8 +125,12 @@ dateInput_cell <- function(inputId, label = "", value = NULL,
          ifelse(value != "", paste0("data-min-date='", min, "' "), ""),
          ifelse(value != "", paste0("data-max-date='", max, "' "), ""),
          ifelse(width != "", paste0("width='", width, "' "), ""),
-         "/>")
-      
+         "/>",
+         "</div>",
+         "<script type='application/html-dependencies'>",
+         "json2[2014.02.04;jquery[1.11.0];shiny[0.12.2]bootstrap-datepicker[1.0.2];bootstrap[3.3.1]",
+         "</script>")
+
 }
 
 #' @rdname dateInputs
@@ -144,3 +154,4 @@ dateInput_row <- function(inputId, label = "", value = NULL,
   if (leftLabel) data.frame(label, controls, stringsAsFactors = FALSE)
   else data.frame(controls, label, stringsAsFactors = FALSE)
 }
+

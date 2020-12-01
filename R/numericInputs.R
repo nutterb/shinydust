@@ -49,35 +49,71 @@
 #' 
 #' @export
 
-numericInput_cell <- function(inputId, label="", value, min=NA, max=NA,
-                              step=NA, width=""){
-  if (length(min) == 1) min <- rep(min, length(inputId))
-  if (length(max) == 1) max <- rep(max, length(inputId))
-  if (length(step) == 1) step <- rep(step, length(inputId))
-  if (length(value) == 1) value <- rep(value, length(inputId))
+numericInput_cell <- function (inputId, label = "", value, 
+                               min = NA, max = NA, step = NA, 
+                               width = "", 
+                               disabled = FALSE, hidden = FALSE) 
+{
+  coll <- checkmate::makeAssertCollection()
+  mapply(checkmate::assertCharacter, 
+         list(inputId, label, width), 
+         .var.name = c("inputId", "label", "width"), 
+         MoreArgs = list(add = coll))
+  mapply(checkmate::assertNumeric, 
+         list(min, max, step), 
+         .var.name = c("min", "max", "step"), 
+         MoreArgs = list(add = coll))
+  lapply(list(disabled, hidden), 
+         checkmate::assertLogical, 
+         add = coll)
+  checkmate::reportAssertions(coll)
   
-  paste0(label, "<input id='", inputId, "' ",
-         "class='form-group shiny-input-container form-control' type='number' ",
-         ifelse(is.na(value), "", paste0("value='", value, "' ")),
-         ifelse(is.na(min), "", paste0("min='", min, "' ")),
-         ifelse(is.na(max), "", paste0("max='", max, "' ")),
-         ifelse(is.na(step), "", paste0("step='", step, "' ")),
-         ifelse(width=="", "", paste0("style='width:", width, ";' ")),
-         "/>")
+  min <- rep(min, 
+             length.out = length(inputId))
+  max <- rep(max, 
+             length.out = length(inputId))
+  step <- rep(step, 
+              length.out = length(inputId))
+  value <- rep(value, 
+               length.out = length(inputId))
+  disabled <- rep(disabled, 
+                  length.out = length(inputId))
+  hidden <- rep(hidden, 
+                length.out = length(inputId))
+  paste0(label, "<input id='", inputId, "' ", "class='form-group shiny-input-container form-control", 
+         ifelse(disabled, " shinyjs-disabled", ""), 
+         ifelse(hidden, " shinyjs-hide", ""), 
+         "' type='number' ", 
+         ifelse(is.na(value), "", paste0("value='", value, "' ")), 
+         ifelse(is.na(min), "", paste0("min='", min, "' ")), 
+         ifelse(is.na(max), "", paste0("max='", max, "' ")), 
+         ifelse(is.na(step), "", paste0("step='", step, "' ")), 
+         ifelse(width == "", "", paste0("style='width:", width, ";' ")), "/>")
 }
 
 #' @rdname numericInputs
 #' @export
 
-numericInput_row <- function(inputId, label="", value, min=NA, max=NA,
-                             step=NA, width="", leftLabel=TRUE){
+numericInput_row <- function(inputId, label = "", value, min = NA, max = NA, 
+                             step = NA,  width = "", leftLabel = TRUE, 
+                             disabled = FALSE, hidden = FALSE) 
+{
   controls <- numericInput_cell(inputId = inputId, 
                                 label = "", 
-                                value = value,
-                                min = min,
-                                max = max,
-                                step = step,
-                                width = width)
-  if (leftLabel) data.frame(label, controls, stringsAsFactors = FALSE)
-  else data.frame(controls, label, stringsAsFactors = FALSE)
+                                value = value, 
+                                min = min, 
+                                max = max, 
+                                step = step, 
+                                width = width, 
+                                disabled = disabled, 
+                                hidden = hidden)
+  if (leftLabel){
+    data.frame(label, 
+               controls, 
+               stringsAsFactors = FALSE)
+  } else {
+    data.frame(controls, 
+               label, 
+               stringsAsFactors = FALSE)
+  }
 }

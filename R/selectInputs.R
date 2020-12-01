@@ -52,37 +52,88 @@
 #' 
 #' @export
 
-selectInput_cell <- function(inputId, label = "", choices, selected = NULL, 
-                             multiple = FALSE, selectize = TRUE, width = "", 
-                             size = NULL){
-  if (is.null(names(choices))) names(choices) <- choices
-  if (is.null(selected)) selected = choices[1]
+selectInput_cell <- function (inputId, label = "", 
+                              choices, selected = NULL, 
+                              multiple = FALSE, selectize = TRUE, 
+                              width = "", size = NULL, 
+                              disabled = FALSE, hidden = FALSE) 
+{
+  coll <- checkmate::makeAssertCollection()
+  mapply(checkmate::assertCharacter, 
+         list(inputId, label, width), 
+         .var.name = c("inputId", "label", "width"), 
+         MoreArgs = list(add = coll))
+  mapply(checkmate::assertLogical, 
+         list(multiple, selectize, disabled, hidden), 
+         .var.name = c("multiple", "selectize", "disabled", "hidden"), 
+         len = list(1, 1, NULL, NULL), 
+         MoreArgs = list(add = coll))
   
+  if (!is.null(size)) {
+    checkmate::assertInteger(size, 
+                             len = 1, 
+                             add = coll)
+  }
+  
+  checkmate::reportAssertions(coll)
+  
+  if (is.null(names(choices))) 
+    names(choices) <- choices
+  
+  if (is.null(selected)) 
+    selected = choices[1]
+  
+  label <- rep(label, 
+               length.out = length(inputId))
+  disabled <- rep(disabled, 
+                  length.out = length(inputId))
+  hidden <- rep(hidden, 
+                length.out = length(hidden))
   paste0(label, 
-         "<select id='", inputId, "' ",
-         if (multiple) "multiple='multiple' " else "",
-         ">",
-         paste0("<option value='", choices, "' ", 
-                ifelse(selected == choices, " selected", ""), ">",
-                names(choices), "</option> ", collapse=" "),
+         "<select id='", inputId, "' ", 
+         if (multiple) "multiple='multiple' " else "", 
+         "class='form-group shiny-input-container", 
+         ifelse(disabled, " shinyjs-disabled", ""), 
+         ifelse(hidden, " shinyjs-hide", ""),
+         "'", 
+         ifelse(width == "", "", 
+                paste0(" style='width:", width, "'")), 
+         ">", 
+         paste0("<option value='", 
+                choices, "' ", 
+                ifelse(selected == choices, " selected", ""), 
+                ">",
+                names(choices), "</option> ", collapse = " "), 
          if (selectize) "<script type='application/json' data-for='x'>{}</script>" else "")
-                
 }
 
 #' @rdname selectInputs
 #' @export
 
-selectInput_row <- function(inputId, label = "", choices, selected = NULL,
-                            multiple = FALSE, selectize = TRUE, width = "",
-                            size = NULL, leftLabel = TRUE){
+selectInput_row <- function(inputId, label = "", 
+                            choices, selected = NULL, 
+                            multiple = FALSE, selectize = TRUE, 
+                            width = "", size = NULL, 
+                            leftLabel = TRUE, 
+                            disabled = FALSE, hidden = FALSE) 
+{
   controls <- selectInput_cell(inputId = inputId, 
                                label = "", 
-                               choices = choices,
-                               selected = selected,
-                               multiple = multiple,
-                               selectize = selectize,
-                               width = width,
-                               size = NULL)
-  if (leftLabel) data.frame(label, controls, stringsAsFactors = FALSE)
-  else data.frame(controls, label, stringsAsFactors = FALSE)
+                               choices = choices, 
+                               selected = selected, 
+                               multiple = multiple, 
+                               selectize = selectize, 
+                               width = width, 
+                               size = NULL, 
+                               disabled = disabled, 
+                               hidden = hidden)
+  if (leftLabel){
+    data.frame(label, 
+               controls, 
+               stringsAsFactors = FALSE)
+  } else {
+    data.frame(controls, 
+               label, 
+               stringsAsFactors = FALSE)
+  }
 }

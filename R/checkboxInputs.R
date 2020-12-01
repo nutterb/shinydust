@@ -45,29 +45,59 @@
 #' @export
 
 
-checkboxInput_cell <- function(inputId, label="", value=FALSE, width="", leftLabel = FALSE){
+checkboxInput_cell <- function(inputId, label = "", value = FALSE, width = "", 
+                               leftLabel = FALSE, 
+                               disabled = FALSE, hidden = FALSE) 
+{
+  coll <- checkmate::makeAssertCollection()
+  mapply(checkmate::assertCharacter, 
+         list(inputId, label, width), 
+         .var.name = c("inputId", "label", "width"), 
+         MoreArgs = list(add = coll))
+  mapply(checkmate::assertLogical, 
+         list(value, leftLabel, disabled, hidden), 
+         .var.name = c("value", "leftLabel", "disabled", "hidden"), 
+         MoreArgs = list(add = coll))
+  checkmate::reportAssertions(coll)
   
-  if (length(leftLabel) == 1) leftLabel <- rep(leftLabel, length(inputId))
-  
-  paste0(ifelse(leftLabel, label, ""),
-         "<input id='", inputId, "' ",
-         "type='checkbox' ",
-         "class='form-group shiny-input-container checkbox' ",
-         ifelse(value, "checked='checked' ", ""),
-         ifelse(width == "", "", paste0("style='width:", width, "'")),
-         "/>", 
-         ifelse(leftLabel, "", label))
+  leftLabel <- rep(leftLabel, 
+                   length.out = length(inputId))
+  disabled <- rep(disabled, 
+                  length.out = length(inputId))
+  hidden <- rep(hidden, 
+                length.out = length(inputId))
+  sprintf(paste0("%s<input id='%s' type='checkbox' class='form-group ", 
+                 "shiny-input-containter checkbox%s%s'%s%s/>%s"), 
+          ifelse(leftLabel, label, ""), 
+          inputId, 
+          ifelse(disabled, " shinyjs-disabled", ""), 
+          ifelse(hidden, " shinyjs-hide", ""), 
+          ifelse(value, "checked='checked' ", ""), 
+          ifelse(width == "", "", 
+                 paste0("style='width:", width, "'")), 
+          ifelse(leftLabel, "", label))
 }
 
 #' @rdname checkboxInputs
 #' @export
 
-checkboxInput_row <- function(inputId, label="", value=FALSE, width="", leftLabel = FALSE){
-  
+checkboxInput_row <- function(inputId, label = "", value = FALSE, width = "", 
+                              leftLabel = FALSE, 
+                              disabled = FALSE, hidden = FALSE) 
+{
   controls <- checkboxInput_cell(inputId = inputId, 
                                  label = "", 
-                                 value = value,
-                                 width = width)
-  if (leftLabel) data.frame(label, controls, stringsAsFactors = FALSE)
-  else data.frame(controls, label, stringsAsFactors = FALSE)
+                                 value = value, 
+                                 width = width, 
+                                 disabled = disabled, 
+                                 hidden = hidden)
+  if (leftLabel){ 
+    data.frame(label, 
+               controls, 
+               stringsAsFactors = FALSE)
+  } else {
+    data.frame(controls, 
+               label, 
+               stringsAsFactors = FALSE)
+  }
 }

@@ -44,26 +44,65 @@
 #' 
 #' @export
 
-textArea_cell <- function(inputId, label = "", value = "", 
-                          leftLabel = TRUE, ...){
+textArea_cell <- function (inputId, label = "", value = "", 
+                           leftLabel = TRUE, 
+                           ..., 
+                           disabled = FALSE, hidden = FALSE, readonly = FALSE) 
+{
+  coll <- checkmate::makeAssertCollection()
+  mapply(checkmate::assertCharacter, 
+         list(inputId, label, value), 
+         .var.name = c("inputId", "label", "value"), 
+         add = coll)
+  mapply(checkmate::assertLogical, 
+         list(leftLabel, disabled, hidden), 
+         .var.name = c("leftLabel", "disabled", "hidden"), 
+         MoreArgs = list(add = coll))
+  checkmate::reportAssertions(coll)
+  
   dots <- unlist(list(...))
   dots <- dots[names(dots) != ""]
   
-  paste0(label,
+  label <- rep(label, 
+               length.out = length(inputId))
+  disabled <- rep(disabled, 
+                  length.out = length(inputId))
+  hidden <- rep(hidden, 
+                length.out = length(inputId))
+  readonly <- rep(readonly, 
+                  length.out = length(inputId))
+  paste0(label, 
          "<textarea id='", inputId, "' ", 
-         paste0(names(dots), "='", dots, "' ", collapse=""),
-         ">", value, "</textarea>")
+         paste0(names(dots), "='", dots, "' ", collapse = ""), 
+         "class='", 
+         ifelse(hidden, " shinyjs-hide", ""), 
+         ifelse(disabled, " shinyjs-disabled", ""), "'", 
+         ifelse(readonly, " readonly", ""), ">", 
+         value, 
+         "</textarea>")
 }
 
 #' @rdname textAreaInputs
 #' @export
 
-textArea_row <- function(inputId, label = "", value = "",
-                         leftLabel = TRUE, ...){
+textArea_row <- function (inputId, label = "", value = "", 
+                          leftLabel = TRUE, 
+                          ..., 
+                          disabled = FALSE, hidden = FALSE) 
+{
   controls <- textArea_cell(inputId = inputId, 
                             label = "", 
-                            value = value,
-                            ...)
-  if (leftLabel) data.frame(label, controls, stringsAsFactors = FALSE)
-  else data.frame(controls, label, stringsAsFactors = FALSE)
+                            value = value, 
+                            ..., 
+                            disabled = disabled, 
+                            hidden = hidden)
+  if (leftLabel){
+    data.frame(label, 
+               controls, 
+               stringsAsFactors = FALSE)
+  } else{
+    data.frame(controls, 
+               label, 
+               stringsAsFactors = FALSE)
+  } 
 }

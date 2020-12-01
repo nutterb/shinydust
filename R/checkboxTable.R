@@ -174,59 +174,51 @@
 #' }
 #' @export
 
-checkboxTable <- function(tbl, inputId, label="", value = FALSE,
-                               table_label = "",
-                               control_column = 1, pixie=. %>% identity(),
-                               display_table = FALSE){
+checkboxTable <- function (tbl, inputId, label = "", value = FALSE, 
+                           table_label = "", control_column = 1L, 
+                           pixie = . %>% identity(), 
+                           disabled = FALSE, hidden = FALSE, 
+                           display_table = FALSE) 
+{
+  coll <- checkmate::makeAssertCollection()
+  checkmate::assertClass(tbl, 
+                         classes = "data.frame", 
+                         add = coll)
+  mapply(checkmate::assertLogical, 
+         list(value, disabled, hidden, display_table), 
+         .var.name = c("value", "disabled", "hidden", "display_table"), 
+         len = list(NULL, NULL, NULL, 1), 
+         MoreArgs = list(add = coll))
+  mapply(checkmate::assertCharacter, 
+         list(table_label, label), 
+         .var.name = c("table_label", "label"), 
+         len = list(1, NULL), 
+         MoreArgs = list(add = coll))
   
-  Check <- ArgumentCheck::newArgCheck()
+  checkmate::assertInteger(control_column, 
+                           len = 1, 
+                           add = coll)
+  checkmate::reportAssertions(coll)
   
-  if (!inherits(tbl, "data.frame"))
-    ArgumentCheck::addError(
-      msg = "'tbl' must inherit class 'data.frame'",
-      argcheck = Check)
-  
-  if (!is.logical(value))
-    ArgumentCheck::addError(
-      msg = "'value' must be a logical vector",
-      argcheck = Check)
-  
-  if (length(value) != nrow(tbl) & length(value) != 1)
-    ArgumentCheck::addError(
-      msg = "'value' must have length equal to 'nrow(tbl)'",
-      argcheck = Check)
-  
-  if (length(table_label) != 1){
-    if (length(table_label) > 1){
-      ArgumentCheck::addWarning(
-        msg = "'table_label' has length > 1.  The first element is used",
-        argcheck = Check)
-      table_label <- table_label[1]
-    }
-    else {
-      ArgumentCheck::addError(
-        msg = "'table_label' had length zero and should have length 1.",
-        argcheck = Check)
-    }
-  }
-  
-  ArgumentCheck::finishArgCheck(Check)
-  
-  
-  checkbox <- checkboxInput_cell(inputId, label, value)
-  
-  tbl <- insert_control_column(tbl, checkbox, control_column)
-  
-  tbl <- 
-    pixiedust::dust(tbl) %>%
-    pixiedust::sprinkle_print_method("html") %>%
-    pixie 
-  
+  label <- rep(label, 
+               length.out = length(inputId))
+  disabled <- rep(disabled, 
+                  length.out = length(inputId))
+  hidden <- rep(hidden, 
+                length.out = length(inputId))
+  checkbox <- checkboxInput_cell(inputId, 
+                                 label, 
+                                 value, 
+                                 disabled = disabled, 
+                                 hidden = hidden)
+  tbl <- insert_control_column(tbl, 
+                               checkbox, 
+                               control_column)
+  tbl <- pixiedust::dust(tbl) %>% 
+    pixiedust::sprinkle_print_method("html") %>% 
+    pixie
   if (display_table) return(tbl)
   
-  tbl %>%
-    print(asis = FALSE) #%>%
-    # paste_checkbox_group()
+  tbl %>% print(asis = FALSE)
 }
-
 

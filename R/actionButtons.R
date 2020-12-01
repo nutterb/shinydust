@@ -68,43 +68,134 @@
 #' }
 #' @export
 
-actionButton_cell <- function(inputId, label, icon = NULL, width = "", 
-                              leftLabel = TRUE, labelButton = TRUE, ...){
+actionButton_cell <- function(inputId, label, icon = NULL, 
+                              width = "", leftLabel = TRUE, 
+                              labelButton = TRUE, disabled = FALSE, 
+                              hidden = FALSE, style = "", 
+                              ...) 
+{
+  coll <- checkmate::makeAssertCollection()
+
+  mapply(checkmate::assertCharacter, 
+         list(inputId, label, style), 
+         .var.name = c("inputId", "label", "style"), 
+         MoreArgs = list(add = coll))
   
-  if (length(leftLabel) == 1) leftLabel <- rep(leftLabel, length(inputId))
-  if (length(labelButton) == 1) labelButton <- rep(labelButton, length(inputId))
+  mapply(checkmate::assertLogical, 
+         list(leftLabel, labelButton, disabled, hidden), 
+         .var.name = c("leftLabel", "labelButton", 
+                       "disabled", "hidden"), 
+         MoreArgs = list(add = coll))
   
-  paste0(ifelse(leftLabel & !labelButton, label, ""),
-         "<button id='", inputId, "' ",
-         ifelse(width == "", "", paste0("style='width:", width, ";' ")), 
-         "type='button' class='btn btn-default action-button'>",
-         ifelse(labelButton, label, ""),
-         "</button>",
-         ifelse(!leftLabel & !labelButton, label, ""))
+  checkmate::reportAssertions(coll)
+  
+  label <- rep(label, 
+               length.out = length(inputId))
+  leftLabel <- rep(leftLabel, 
+                   length.out = length(inputId))
+  labelButton <- rep(labelButton, 
+                     length.out = length(inputId))
+  width <- rep(width, 
+               length.out = length(inputId))
+  disabled <- rep(disabled, 
+                  length.out = length(inputId))
+  hidden <- rep(hidden, 
+                length.out = length(inputId))
+  style <- rep(style, 
+               length.out = length(inputId))
+  sprintf("%s<button id='%s' style='%s;%s' type='button' class='btn btn-default action-button%s%s'>%s</button>%s", 
+          ifelse(leftLabel & !labelButton, 
+                 label, 
+                 ""), 
+          inputId, 
+          ifelse(width == "", 
+                 "", 
+                 paste0("width:", width)), 
+          ifelse(style == "", 
+                 "", 
+                 paste0(style, ";")), 
+          ifelse(disabled, 
+                 " shinyjs-disabled ", 
+                 ""), 
+          ifelse(hidden, 
+                 " shinyjs-hide", 
+                 ""), 
+          ifelse(labelButton, 
+                 label, 
+                 ""), 
+          ifelse(!leftLabel & !labelButton, 
+                 label, 
+                 ""))
+}
+#' @rdname actionButtons
+#' @export
+
+actionButton_row <- function (inputId, label, icon = NULL, 
+                              width = "", leftLabel = TRUE, 
+                              labelButton = TRUE, disabled = FALSE, 
+                              hidden = FALSE, ...) 
+{
+  controls <- 
+    actionButton_cell(inputId = inputId, 
+                      label = if (labelButton) label else "", 
+                      width = width, 
+                      leftLabel = leftLabel, 
+                      labelButton = labelButton, 
+                      disabled = disabled, 
+                      hidden = hidden)
+  if (labelButton) {
+    if (leftLabel) 
+      data.frame(label = "", 
+                 controls, 
+                 stringsAsFactors = FALSE)
+    else data.frame(controls, 
+                    label = "", 
+                    stringsAsFactors = FALSE)
+  }
+  else {
+    if (leftLabel){ 
+      data.frame(label, 
+                 controls, 
+                 stringsAsFactors = FALSE)
+    }
+    else {
+      data.frame(controls, 
+                 label, 
+                 stringsAsFactors = FALSE)
+    }
+  }
 }
 
 #' @rdname actionButtons
 #' @export
 
-actionButton_row <- function(inputId, label, icon = NULL, width = NULL,
-                             leftLabel = TRUE, labelButton = TRUE, ...){
+actionLink_cell <- function(inputId, label, icon = NULL, 
+                            disabled = FALSE, hidden = FALSE, 
+                             ...) 
+{
+  coll <- checkmate::makeAssertCollection()
+  checkmate::assertCharacter(inputId, 
+                             add = coll)
+  checkmate::assertCharacter(label, 
+                             len = length(inputId), 
+                             add = coll)
+  checkmate::assertLogical(disabled, 
+                           add = coll)
+  checkmate::assertLogical(hidden, 
+                           add = coll)
+  checkmate::reportAssertions(coll)
   
-  controls <- actionButton_cell(inputId = inputId, 
-                                label = "",
-                                width = width,
-                                leftLabel = leftLabel,
-                                labelButton = labelButton)
-  if (leftLabel) data.frame(label, controls, stringsAsFactors = FALSE)
-  else data.frame(controls, label, stringsAsFactors = FALSE)
-  
-}
-
-#' @rdname actionButtons
-#' @export
-
-actionLink_cell <- function(inputId, label, icon = NULL, ...){
-  paste0("<a id='", inputId, "' ",
-         "href='#' class='action-button'>",
-         label,
-         "</a>")
+  disabled <- rep(disabled, 
+                  length.out = length(inputId))
+  hidden <- rep(hidden, 
+                length.out = length(inputId))
+  sprintf("<a class='action-button%s%s'  href='#' id='%s'>%s</a>", 
+          ifelse(disabled, 
+                 " shinyjs-disabled", 
+                 ""), 
+          ifelse(hidden, 
+                 " shinyjs-hide", 
+                 ""), 
+          inputId, 
+          label)
 }

@@ -68,69 +68,84 @@
 dateInput_cell <- function(inputId, label = "", value = NULL, 
                            min = NULL, max = NULL, 
                            format = "yyyy-mm-dd", startview = "month", 
-                           weekstart = 0, language = "en", width = ""){
-  Check <- ArgumentCheck::newArgCheck()
+                           weekstart = 0, 
+                           language = "en", width = "", 
+                           emptyValueNoDefault = TRUE, 
+                           disabled = FALSE, hidden = FALSE) 
+{
+  coll <- checkmate::makeAssertCollection()
   
-  if (!is.null(value)){
-    if (!is.Date(value) & any(!grepl("\\d{4}-\\d{2}-\\d{2}", value))){
-      ArgumentCheck::addError(
-        msg = "'value' must either be a date object of have the format 'yyyy-mm-dd'",
-        argcheck = Check)
+  if (!is.null(value)) {
+    if (!inherits(value, "Date") & 
+        (any(!grepl("\\\\d{4}-\\\\d{2}-\\\\d{2}", value) & 
+             as.character(value) != ""))) {
+      coll$push("`value` must either be a date object of have the format 'yyyy-mm-dd'")
     }
   }
-  
-  if (!is.null(min)){
-    if (!is.Date(min) & any(!grepl("\\d{4}-\\d{2}-\\d{2}", min))){
-      ArgumentCheck::addError(
-        msg = "'min' must either be a date object of have the format 'yyyy-mm-dd'",
-        argcheck = Check)
+  if (!is.null(min)) {
+    if (!inherits(min, "Date") & 
+        (any(!grepl("\\\\d{4}-\\\\d{2}-\\\\d{2}", min) & 
+             as.character(min) != ""))) {
+      coll$push("`min` must either be a date object of have the format 'yyyy-mm-dd'")
     }
   }
-  
-  if (!is.null(max)){
-    if (!is.Date(max) & any(!grepl("\\d{4}-\\d{2}-\\d{2}", max))){
-      ArgumentCheck::addError(
-        msg = "'max' must either be a date object of have the format 'yyyy-mm-dd'",
-        argcheck = Check)
+  if (!is.null(max)) {
+    if (!inherits(max, "Date") & 
+        (any(!grepl("\\\\d{4}-\\\\d{2}-\\\\d{2}", max) & 
+             as.character(max) != ""))) {
+      coll$push("`max` must either be a date object of have the format 'yyyy-mm-dd'")
     }
   }
+  checkmate::assertChoice(weekstart, 
+                          choices = 0:6, 
+                          add = coll)
+  checkmate::assertLogical(disabled, 
+                           add = coll)
+  checkmate::assertLogical(hidden, 
+                           add = coll)
+  checkmate::reportAssertions(coll)
   
-  if (!weekstart %in% 0:6)
-    ArgumentCheck::addError(
-      msg = "'weekstart' but be an integer between 0 and 6, inclusive",
-      argcheck = Check)
-      
-  ArgumentCheck::finishArgCheck(Check)
+  if (!is.null(value) & all(grepl("\\\\d{4}-\\\\d{2}-\\\\d{2}", value))) 
+    value <- as.Date(value)
+  if (is.null(value)) 
+    value <- ""
+  if (inherits(value, "Date")) 
+    value <- format(value, format = "%Y-%m-%d")
+  if (is.null(min)) 
+    min <- ""
+  if (inherits(min, "Date")) 
+    min <- format(min, format = "%Y-%m-%d")
+  if (is.null(max)) 
+    max <- ""
+  if (inherits(max, "Date")) 
+    max <- format(max, format = "%Y-%m-%d")
   
-  if (!is.null(value) & all(grepl("\\d{4}-\\d{2}-\\d{2}", value))) value <- as.Date(value)
-      
-  if (is.null(value)) value <- ""
-  if (inherits(value, "Date")) value <- format(value, format = "%Y-%m-%d")
+  disabled <- rep(disabled, 
+                  length.out = length(inputId))
+  hidden <- rep(hidden, 
+                length.out = length(inputId))
   
-  if (is.null(min)) min <- ""
-  if (inherits(min, "Date")) min <- format(min, format = "%Y-%m-%d")
-  
-  if (is.null(max)) max <- ""
-  if (inherits(max, "Date")) max <- format(max, format = "%Y-%m-%d")
-  
-  paste0("<div id='", inputId, "' class='shiny-date-input form-group shiny-input-container'>",
-         label, 
-         "<input class='form-control datepicker' ",
-         "type='text' ",
-         "data-date-language='", language, "' ",
-         "data-date-weekstart='", weekstart, "' ",
-         "data-date-format='", format, "' ",
-         "data-date-start-view='", startview, "' ",
-         ifelse(value != "", paste0("data-initial-date='", value, "' "), ""),
-         ifelse(value != "", paste0("data-min-date='", min, "' "), ""),
-         ifelse(value != "", paste0("data-max-date='", max, "' "), ""),
-         ifelse(width != "", paste0("width='", width, "' "), ""),
-         "/>",
-         "</div>",
-         "<script type='application/html-dependencies'>",
-         "json2[2014.02.04;jquery[1.11.0];shiny[0.12.2]bootstrap-datepicker[1.0.2];bootstrap[3.3.1]",
-         "</script>")
-
+  sprintf(paste0("<div id='%s' ", "class='shiny-date-input form-group shiny-input-container%s%s'>", 
+                 "%s<input class='form-control datepicker' type='text' ", 
+                 "data-date-language='%s' data-date-weekstart='%s' ", 
+                 "data-date-format='%s' data-date-start-view='%s' ", "%s%s%s%s/></div>"), 
+          inputId, 
+          ifelse(disabled, " shinyjs-disabled", ""), 
+          ifelse(hidden, " shinyjs-hide", ""), 
+          label, 
+          language, 
+          weekstart, 
+          format, 
+          startview, 
+          if (emptyValueNoDefault) {
+            sprintf("data-initial-date='%s'", value)
+          } else {
+            ifelse(value != "", sprintf("data-initial-date='%s'", 
+                                        value), "")
+          }, 
+          ifelse(min != "", sprintf("data-min-date='%s'", min), ""), 
+          ifelse(max != "", sprintf("data-max-date='%s'", max), ""), 
+          ifelse(width != "", sprintf("width='%s'", width), ""))
 }
 
 #' @rdname dateInputs
@@ -139,19 +154,31 @@ dateInput_cell <- function(inputId, label = "", value = NULL,
 dateInput_row <- function(inputId, label = "", value = NULL, 
                           min = NULL, max = NULL, 
                           format = "yyyy-mm-dd", startview = "month", 
-                          weekstart = 0, language = "en", width = "",
-                          leftLabel = TRUE){
+                          weekstart = 0, language = "en", width = "", 
+                          leftLabel = TRUE, 
+                          disabled = FALSE, hidden = FALSE) 
+{
   controls <- dateInput_cell(inputId = inputId, 
-                            label = "", 
-                            value = value,
-                            min = min, 
-                            max = max,
-                            format = format,
-                            startview = startview,
-                            weekstart = weekstart,
-                            language = language,
-                            width = width)
-  if (leftLabel) data.frame(label, controls, stringsAsFactors = FALSE)
-  else data.frame(controls, label, stringsAsFactors = FALSE)
+                             label = "", 
+                             value = value, 
+                             min = min, 
+                             max = max, 
+                             format = format, 
+                             startview = startview, 
+                             weekstart = weekstart, 
+                             language = language, 
+                             width = width, 
+                             disabled = disabled, 
+                             hidden = hidden)
+  if (leftLabel){
+    data.frame(label, 
+               controls, 
+               stringsAsFactors = FALSE)
+  }
+  else {
+    data.frame(controls, 
+               label, 
+               stringsAsFactors = FALSE)
+  }
 }
 

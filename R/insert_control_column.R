@@ -26,10 +26,12 @@
    
 
 
-insert_control_column <- function(tbl, control, control_column){
-  if (control_column == 1) cbind(control, tbl)
-  else if (control_column == (ncol(tbl) + 1)) cbind(tbl, control)
-  else cbind(tbl[, 1:(control_column - 1), drop = FALSE], 
-             control, 
+insert_control_column <- function (tbl, control, control_column) 
+{
+  if (control_column == 1) 
+    cbind(control, tbl)
+  else if (control_column == (ncol(tbl) + 1)) 
+    cbind(tbl, control)
+  else cbind(tbl[, 1:(control_column - 1), drop = FALSE], control, 
              tbl[, control_column:ncol(tbl), drop = FALSE])
 }

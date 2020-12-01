@@ -41,21 +41,70 @@
 #' 
 #' @export
 
-textInput_cell <- function(inputId, label, value = "", width = ""){
-  paste0(label,
-         "<input id='", inputId, "' ",
-         "type='text' class='form-group shiny-input-container form-control' ",
-         "value='", value, "'/>")
+textInput_cell <- function (inputId, label, value = "", 
+                            width = "", 
+                            disabled = FALSE, hidden = FALSE, 
+                            placeholder = NA) 
+{
+  coll <- checkmate::makeAssertCollection()
+  mapply(checkmate::assertCharacter, 
+         list(inputId, label, width), 
+         .var.name = c("inputId", "label", "width"), 
+         MoreArgs = list(add = coll))
+  mapply(checkmate::assertLogical, 
+         list(disabled, hidden), 
+         .var.name = c("disabled", "hidden"), 
+         MoreArgs = list(add = coll))
+  checkmate::reportAssertions(coll)
+  label <- rep(label, 
+               length.out = length(inputId))
+  value <- rep(value, 
+               length.out = length(inputId))
+  width <- rep(width, 
+               length.out = length(inputId))
+  disabled <- rep(disabled, 
+                  length.out = length(inputId))
+  hidden <- rep(hidden, 
+                length.out = length(inputId))
+  placeholder <- rep(placeholder, 
+                     length.out = length(inputId))
+  value <- gsub("'", "&#39;", value)
+  paste0(label, 
+         "<input id='", inputId, "' ", 
+         "type='text' class='form-group shiny-input-container form-control", 
+         ifelse(disabled, " shinyjs-disabled", ""), 
+         ifelse(hidden, " shinyjs-hide", ""), "' ", 
+         "style='width:", width, "' ", 
+         ifelse(!is.na(value), 
+                paste0("value='", value, "'"), ""), 
+         ifelse(is.na(placeholder), "", 
+                paste0("placeholder='", placeholder, "'")), 
+         "/>")
 }
 
 #' @rdname textInputs
 #' @export
 
-textInput_row <- function(inputId, label, value="", width="", leftLabel=TRUE){
+textInput_row <- function (inputId, label, 
+                           value = "", width = "", 
+                           leftLabel = TRUE, 
+                           disabled = FALSE, hidden = FALSE, 
+                           placeholder = NA) 
+{
   controls <- textInput_cell(inputId = inputId, 
-                               label = "", 
-                               value = value,
-                               width = width)
-  if (leftLabel) data.frame(label, controls, stringsAsFactors = FALSE)
-  else data.frame(controls, label, stringsAsFactors = FALSE)
+                             label = "", 
+                             value = value, 
+                             width = width, 
+                             disabled = disabled, 
+                             hidden = hidden, 
+                             placeholder = placeholder)
+  if (leftLabel){
+    data.frame(label, 
+               controls, 
+               stringsAsFactors = FALSE)
+  } else {
+    data.frame(controls, 
+               label, 
+               stringsAsFactors = FALSE)
+  }
 }

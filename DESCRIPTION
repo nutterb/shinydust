@@ -13,6 +13,7 @@ Imports:
   checkmate
 Suggests:
   rmarkdown,
+  shinyjs,
   testthat
 License: MIT + file LICENSE
 LazyData: true
